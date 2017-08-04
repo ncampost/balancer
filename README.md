@@ -1,4 +1,4 @@
-# Balancer: a simple example of cluster computing, written in Go.
+# Balancer: a simple example of distributed computation, written in Go.
 
 Balancer uses Unix sockets to simulate a cluster of machines, one of which is the Balancer, and the rest are Workers.
 
@@ -14,6 +14,6 @@ This system is **not** fault tolerant.
 
 Simply iterating through nums.txt to add the digits takes around `1.6-1.7s`.
 
-(Not counting cluster initialization time). On my machine, using the Balancer system with 5 Worker machines to do the same task takes around `.95-1s`.
+(Not counting cluster initialization time!) On my machine, using the Balancer system with 5 Worker machines to do the same task takes around `.95-1s`.
 
-`TODO` I will soon run more tests with different number of Worker machines to gather more data.
+`TODO` I will soon run more tests with different number of Worker machines to gather more runtime data.
