@@ -1,0 +1,71 @@
+package system
+
+import (
+	"net"
+	"net/rpc"
+	"strconv"
+	"os"
+)
+
+// All the information that defines a Worker machine
+type Worker struct {
+	address string
+	l net.Listener
+}
+
+// --------------------------------------------------------
+// Handlers for RPCs that the Worker receives.
+
+// Iterate through chunk, summing the digits.
+func (wr *Worker) DoAddWork(args *DoAddWorkArgs, reply *DoAddWorkReply) error {
+	result := 0
+	for _, k := range args.Bytes {
+		n, _ := strconv.Atoi(string(k))
+		result += n
+	}
+	reply.Result = result
+	reply.Success = true
+	return nil
+}
+
+// Handlers for RPCs that the Worker receives.
+// --------------------------------------------------------
+
+// --------------------------------------------------------
+// Internal Worker functionality
+
+func MakeWorker(name string, balancer string) *Worker {
+	wr := &Worker{address: name}
+	args := &RegisterArgs{name}
+	var reply RegisterReply
+	wr.StartRPCServerUnix(name)
+	call(balancer, "Balancer.Register", args, &reply)
+	return wr
+}
+
+// Internal Worker functionality
+// --------------------------------------------------------
+
+// --------------------------------------------------------
+// Worker RPC server
+
+func (wr *Worker) StartRPCServerUnix(socket string) {
+	rpcServer := rpc.NewServer()
+	rpcServer.Register(wr)
+	var e error
+	os.Remove(socket)
+	wr.l, e = net.Listen("unix", socket)
+	
+	if e != nil {
+		return
+	}
+	go rpcServer.Accept(wr.l)
+}
+
+func (wr *Worker) EndRPCServerUnix() {
+	wr.l.Close()
+}
+
+
+// Worker RPC server
+// --------------------------------------------------------
