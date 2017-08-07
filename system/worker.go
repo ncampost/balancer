@@ -28,6 +28,13 @@ func (wr *Worker) DoAddWork(args *DoAddWorkArgs, reply *DoAddWorkReply) error {
 	return nil
 }
 
+// Balancer pings workers at the start of a job to see which workers are ready to take on a job.
+// Here we just reply true, but other conditions might have us reply false, depending on other factors not considered here.
+func (wr *Worker) PingWorker(args *PingWorkerArgs, reply *PingWorkerReply) error {
+	reply.Success = true
+	return nil
+}
+
 // Handlers for RPCs that the Worker receives.
 // --------------------------------------------------------
 

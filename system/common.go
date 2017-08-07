@@ -26,6 +26,14 @@ type DoAddWorkReply struct {
 	Success bool
 }
 
+type PingWorkerArgs struct {
+	Balancer string
+}
+
+type PingWorkerReply struct {
+	Success bool
+}
+
 // RPC structs
 // --------------------------------------------------------
 

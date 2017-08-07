@@ -28,9 +28,6 @@ func (blr *Balancer) Register(args *RegisterArgs, reply *RegisterReply) error {
 	blr.Lock()
 	defer blr.Unlock()
 	blr.workers = append(blr.workers, args.Worker)
-	go func() {
-		blr.chanWorkers <- args.Worker
-	}()
 	reply.Success = true
 	return nil
 }
@@ -54,6 +51,17 @@ func (blr *Balancer) DoAddJob(infile string, chunksize int) int {
 	var wg sync.WaitGroup
 
 	go blr.handleQueueing(blr.chanWorkers, readyWorkers, quitQueueing)
+
+	for _, k := range blr.workers {
+		go func(k string) {
+			args := &PingWorkerArgs{blr.address}
+			reply := &PingWorkerReply{}
+			call(k, "Worker.PingWorker", args, reply)
+			if reply.Success {
+				readyWorkers <- k
+			}
+		}(k)
+	}
 
 	file, err := os.Open(infile)
 	if err != nil {
@@ -80,20 +88,22 @@ func (blr *Balancer) DoAddJob(infile string, chunksize int) int {
 				byteBuffer := make([]byte, chunksize)
 				_, readerr = io.ReadAtLeast(file, byteBuffer, chunksize)
 				if readerr == io.EOF {
+					file.Close()
 					chanDoneJob <- true
+				} else {
+					go func(worker string, byteBuffer []byte, chanResults chan int, chanDoneJob chan bool) {
+						wg.Add(1)
+
+						args := &DoAddWorkArgs{blr.address, byteBuffer}
+						var reply DoAddWorkReply
+						call(targetWorker, "Worker.DoAddWork", args, &reply)
+
+						chanResults <- reply.Result
+
+						blr.chanWorkers <- targetWorker
+						wg.Done()
+					}(targetWorker, byteBuffer, chanResults, chanDoneJob)
 				}
-				go func(worker string, byteBuffer []byte, chanResults chan int, chanDoneJob chan bool) {
-					wg.Add(1)
-
-					args := &DoAddWorkArgs{blr.address, byteBuffer}
-					var reply DoAddWorkReply
-					call(targetWorker, "Worker.DoAddWork", args, &reply)
-
-					chanResults <- reply.Result
-
-					blr.chanWorkers <- targetWorker
-					wg.Done()
-				}(targetWorker, byteBuffer, chanResults, chanDoneJob)
 			case <- chanDoneJob:
 				continueWorking = false
 		}

@@ -4,7 +4,7 @@ Balancer uses Unix sockets to simulate a cluster of machines, one of which is th
 
 ## Functionality: the cluster takes nums.txt, a file containing 30 million digits, and adds them all together.
 
-The job of the Balancer is to monitor the job, split it up into chunks of fixed size, and hand out the chunks to the Worker machines when they are ready to do work. The Worker machines iterate through the chunks, adding together digits, and report the sum to the Balancer when done.
+The job of the Balancer is to monitor the job, split it up into chunks of fixed size, and hand out the chunks to the Worker machines when they are ready to do work. The Worker machines iterate through the chunks, adding together digits, and report the sum to the Balancer when done. The Balancer handles merging Worker results into a final sum of about 135 million.
 
 The test simulates separate machines that communicate via RPC messages.
 
@@ -12,13 +12,31 @@ This system is **not** fault tolerant.
 
 ### Runtime
 
+*These are numbers coming from running on my machine (the processor is Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz- it has two cores- and I'm running Ubuntu 16.10. I'm **not** a hardware or OS expert, but I assume that this OS handles switching across and utilizing both cores nicely, so having a nicer processor- particularly, having more cores- would result in greater speedup).*
+
 Simply iterating through nums.txt to add the digits takes around `1.6-1.7s`.
 
-(Not counting cluster initialization time!) On my machine, using the Balancer system with 5 Worker machines to do the same task takes around `.95-1s`.
+Runtimes averaged over 10 trials. Chunksize for all these trials is 30,000 bytes.
 
-## TODO
+Number of worker machines | Average runtime, 10 trials
+--------------------------|---------------------------
+1 | 1.9665s
+2 | 1.2939s
+3 | 1.0297s
+4 | 0.9610s
+5 | 0.9524s
+6 | 0.9633s
+7 | 0.9786s
+8 | 0.9932s
+9 | 1.0020s
+10 | 1.0023s
 
-* I will soon run more tests with different number of Worker machines to gather more runtime data.
+Note the overhead the Balancer system incurs- 1 machine runtime is on average slower than simply iterating through the file. This is from work the Balancer does splitting up the file, adding together results, etc., and also time spent sending RPC messages.
+
+
+
+## TODOs
+
+* I will soon run more tests with different chunksizes to gather more runtime data.
 * There's **lots** of error handling that should be being done that is not yet done.
 * Handle failures of Worker machines
-* Perhaps add my Raft library and work with 3 Balancers in order to cover Balancer failure?
