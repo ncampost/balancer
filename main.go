@@ -9,6 +9,7 @@ import (
 )
 
 const NUM_WORKERS = 10
+const CHUNKSIZE = 30000
 
 func main() {
 	// Make Balancer machine
@@ -34,7 +35,7 @@ func main() {
 	for i := 0; i < 10; i++ {
 		fmt.Printf("Starting trial %v.\n", i+1)
 		start := time.Now()
-		sum := blr.DoAddJob("nums.txt", 30000)
+		sum := blr.DoAddJob("nums.txt", CHUNKSIZE)
 		elapsed := time.Since(start)
 		fmt.Println(sum)
 		file.WriteString(fmt.Sprintf("%v machines: %v\n", NUM_WORKERS, elapsed))
