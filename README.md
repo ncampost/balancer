@@ -42,3 +42,12 @@ Note that my processor has only so many cores, so eventually larger number of wo
 * I will soon run more tests with different chunksizes to gather more runtime data.
 * There's **lots** of error handling that should be being done that is not yet done.
 * Handle failures of Worker machines
+
+## Process
+1. AddJob is initiated on Balancer, with nums.txt provided as the infile.
+2. Balancer initializes a number of channels that are used to synchronize goroutines. One is a buffered channel of length len(blr.workers), which functions as the queue of ready workers.
+3. Balancer via RPC pings workers in its slice of worker addresses to check initial availability
+4. Balancer creates a goroutine to handle putting workers back in the worker queue when they finish a job (this is a separate goroutine so later we can implement not putting the worker back in the queue if the worker becomes unresponsive), and a goroutine to merge results that the workers will report.
+5. Balancer begins reading chunks of bytes out of infile, reading off the channel of ready workers, and sending DoAddWork RPCs of those chunks to the workers it obtains.
+6. When the job finishes, the result is commuicated to the result merge goroutine via chan and the worker is put back into the queue via the requeue goroutine.
+7. When Balancer reaches the end of file, it sends on channels to quit the merging and requeueing goroutines, and reports the final answer, which is the sum of the whole file.  
