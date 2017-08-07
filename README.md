@@ -33,7 +33,7 @@ Number of worker machines | Average runtime, 10 trials
 
 Note the overhead the Balancer system incurs- 1 machine runtime is on average slower than simply iterating through the file. This is from work the Balancer does splitting up the file, adding together results, etc., and also time spent sending RPC messages.
 
-Note that my processor has only so many cores, so eventually larger number of worker machine processes start to crowd the processor, and begin to weigh down the system more than they're worth. Though, I would guess that having actual separate machines instead of simulating them on my one machine would remove this slowdown effect. Then, the limiting factor would be additional time spent sending RPC messages versus time saved having more machines do work at the same time.
+Note that my processor has only so many cores, so eventually larger number of worker machine processes start to crowd the processor, and begin to weigh down the system more than they're worth. Though, I would guess that having actual separate machines instead of simulating them on my one machine would remove this slowdown effect. Then, the limiting factor would be additional time spent sending RPC messages versus time saved having more machines do work at the same time, but I would guess that would start happening at a *much* higher machine number.
 
 
 
