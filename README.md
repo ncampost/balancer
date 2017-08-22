@@ -12,7 +12,7 @@ This system is **not** fault tolerant.
 
 ### Runtime
 
-*These are numbers coming from running on my machine (the processor is Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz- it has two cores- and I'm running Ubuntu 16.10. I'm **not** a hardware or OS expert, but I assume that this OS handles switching across and utilizing both cores nicely, so having a nicer processor- particularly, having more cores- would result in greater speedup).*
+*These are numbers coming from running on my machine (the processor is Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz- it has two cores- and I'm running Ubuntu 16.10. The speedup seen below depends heavily on that. As far as I'm aware, Go's scheduler deals with utilizing all cores nicely, so if I had more cores, you'd see the below stagnation occur at a higher machine count).*
 
 Simply iterating through nums.txt to add the digits takes around `1.6-1.7s`.
 
