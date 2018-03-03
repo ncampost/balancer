@@ -41,6 +41,7 @@ func (wr *Worker) PingWorker(args *PingWorkerArgs, reply *PingWorkerReply) error
 // --------------------------------------------------------
 // Internal Worker functionality
 
+// Initialize a new worker
 func MakeWorker(name string, balancer string) *Worker {
 	wr := &Worker{address: name}
 	args := &RegisterArgs{name}
@@ -56,6 +57,7 @@ func MakeWorker(name string, balancer string) *Worker {
 // --------------------------------------------------------
 // Worker RPC server
 
+// Networking stuff
 func (wr *Worker) StartRPCServerUnix(socket string) {
 	rpcServer := rpc.NewServer()
 	rpcServer.Register(wr)
